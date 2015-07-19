@@ -1,0 +1,8 @@
+[package]
+name = "stone-data"
+version = "0.1.0"
+authors = ["Coeuvre Wong <coeuvre@gmail.com>"]
+
+[dependencies]
+
+anymap = "*"
