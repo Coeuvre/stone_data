@@ -2,8 +2,11 @@
 
 extern crate anymap;
 
+pub mod adapter;
 pub mod attr;
 pub mod model;
+pub mod store;
+pub mod serializer;
 pub mod transform;
 
 // Error

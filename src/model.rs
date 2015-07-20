@@ -1,84 +1,29 @@
-use std::any::Any;
 use std::collections::HashMap;
 
-use attr::Attr;
+pub type Attributes<T> = HashMap<String, T>;
 
-pub type Attrs = HashMap<String, Box<Any>>;
+pub trait Model<T> {
+    fn new() -> Self;
 
-pub trait Model {
-    fn attrs(&self) -> &Attrs;
-    fn attrs_mut(&mut self) -> &mut Attrs;
+    fn ty() -> &'static str;
+    fn id(&self) -> Option<&T>;
+    fn attributes(&self) -> &Attributes<T>;
+    fn attributes_mut(&mut self) -> &mut Attributes<T>;
 
-    fn set<T: Any>(&mut self, name: &str, attr: Attr<T>) {
-        let attrs = self.attrs_mut();
-
-        if let Some(a) = attrs.get_mut(name) {
-            if let Some(a) = a.downcast_mut::<Attr<T>>() {
-                *a = attr;
-            } else {
-                // ERROR: not correct attribute type
-            }
-        }
+    fn get_attribute(&self, name: &str) -> Option<&T> {
+        self.attributes().get(name)
     }
 
-    fn get<T: Any>(&self, name: &str) -> Option<&Attr<T>> {
-        let attrs = self.attrs();
-
-        if let Some(attr) = attrs.get(name) {
-            if let Some(attr) = attr.downcast_ref::<Attr<T>>() {
-                return Some(attr)
-            }
-        }
-
-        None
+    fn set_attribute(&mut self, name: &str, attribute: T) {
+        match self.attributes_mut().get_mut(name) {
+            Some(a) => *a = attribute,
+            None => {
+                panic!(format!("attribute `{}` not exist", name));
+            },
+        };
     }
 
     // fn save();
     // fn create();
     // fn delete();
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use attr::{attr, Attr};
-
-    pub struct User {
-        attrs: Attrs,
-    }
-
-    impl User {
-        pub fn new() -> User {
-            let mut attrs = Attrs::new();
-
-            attrs.insert("id".to_string(), attr::<i32>());
-            attrs.insert("name".to_string(), attr::<String>());
-
-            User {
-                attrs: attrs,
-            }
-        }
-    }
-
-    impl Model for User {
-        fn attrs(&self) -> &Attrs {
-            &self.attrs
-        }
-
-        fn attrs_mut(&mut self) -> &mut Attrs {
-            &mut self.attrs
-        }
-    }
-
-    #[test]
-    fn test() {
-        let mut user = User::new();
-
-        user.set("id", Attr::<i32>::new("1".to_string()));
-        assert_eq!(user.get("id").unwrap().get(), Some(&1));
-
-        user.set("name", Attr::<String>::new("coeuvre".to_string()));
-        assert_eq!(user.get("name").unwrap().get(), Some(&"coeuvre".to_string()));
-    }
 }
