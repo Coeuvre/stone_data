@@ -1,6 +1,6 @@
 [package]
-name = "stone-data"
-version = "0.1.0"
+name = "stone_data"
+version = "0.0.0"
 authors = ["Coeuvre Wong <coeuvre@gmail.com>"]
 
 [dependencies]
