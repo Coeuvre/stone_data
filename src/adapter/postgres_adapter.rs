@@ -32,6 +32,31 @@ macro_rules! to_sql_checked {
     }
 }
 
+macro_rules! accepts_for_attribute {
+    () => {
+        accepts!(
+            // Bool
+            Type::Bool,
+            // I8
+            Type::Char,
+            // I16
+            Type::Int2,
+            // I32
+            Type::Int4,
+            // I64
+            Type::Int8,
+            // F32
+            Type::Float4,
+            // F64
+            Type::Float8,
+            // String
+            Type::Varchar, Type::Text, Type::Bpchar, Type::Name,
+            // Postgres Enum as String
+            Type::Other(_)
+        );
+    }
+}
+
 pub struct PostgresAdapter {
     conn: Connection,
 }
@@ -52,64 +77,26 @@ impl ToSql for Attribute {
         }
     }
 
-    accepts!(
-        // Bool
-        Type::Bool,
-        // I8
-        Type::Char,
-        // I16
-        Type::Int2,
-        // I32
-        Type::Int4,
-        // I64
-        Type::Int8,
-        // F32
-        Type::Float4,
-        // F64
-        Type::Float8,
-        // String
-        Type::Varchar, Type::Text, Type::Bpchar, Type::Name,
-        // Postgres Enum as String
-        Type::Other(_)
-    );
+    accepts_for_attribute!();
 }
 
 impl FromSql for Attribute {
     fn from_sql<R: Read>(ty: &Type, raw: &mut R, ctx: &SessionInfo) -> Result<Self, PostgresError> {
         match *ty {
-            Type::Bool => Ok(Attribute::Bool(Some(try!(<bool as FromSql>::from_sql(ty, raw, ctx))))),
-            Type::Char => Ok(Attribute::I8(Some(try!(<i8 as FromSql>::from_sql(ty, raw, ctx))))),
-            Type::Int2 => Ok(Attribute::I16(Some(try!(<i16 as FromSql>::from_sql(ty, raw, ctx))))),
-            Type::Int4 => Ok(Attribute::I32(Some(try!(<i32 as FromSql>::from_sql(ty, raw, ctx))))),
-            Type::Int8 => Ok(Attribute::I64(Some(try!(<i64 as FromSql>::from_sql(ty, raw, ctx))))),
-            Type::Float4 => Ok(Attribute::F32(Some(try!(<f32 as FromSql>::from_sql(ty, raw, ctx))))),
-            Type::Float8 => Ok(Attribute::F64(Some(try!(<f64 as FromSql>::from_sql(ty, raw, ctx))))),
+            Type::Bool => Ok(Attribute::Bool(Some(try!(FromSql::from_sql(ty, raw, ctx))))),
+            Type::Char => Ok(Attribute::I8(Some(try!(FromSql::from_sql(ty, raw, ctx))))),
+            Type::Int2 => Ok(Attribute::I16(Some(try!(FromSql::from_sql(ty, raw, ctx))))),
+            Type::Int4 => Ok(Attribute::I32(Some(try!(FromSql::from_sql(ty, raw, ctx))))),
+            Type::Int8 => Ok(Attribute::I64(Some(try!(FromSql::from_sql(ty, raw, ctx))))),
+            Type::Float4 => Ok(Attribute::F32(Some(try!(FromSql::from_sql(ty, raw, ctx))))),
+            Type::Float8 => Ok(Attribute::F64(Some(try!(FromSql::from_sql(ty, raw, ctx))))),
             Type::Varchar | Type::Text | Type::Bpchar | Type::Name | Type::Other(_)
-                => Ok(Attribute::String(Some(try!(<String as FromSql>::from_sql(ty, raw, ctx))))),
+                => Ok(Attribute::String(Some(try!(FromSql::from_sql(ty, raw, ctx))))),
             _ => Err(PostgresError::WrongType(ty.clone()))
         }
     }
 
-    accepts!(
-        // Bool
-        Type::Bool,
-        // I8
-        Type::Char,
-        // I16
-        Type::Int2,
-        // I32
-        Type::Int4,
-        // I64
-        Type::Int8,
-        // F32
-        Type::Float4,
-        // F64
-        Type::Float8,
-        // String
-        Type::Varchar, Type::Text, Type::Bpchar, Type::Name,
-        // Postgres Enum as String
-        Type::Other(_)
-    );
+    accepts_for_attribute!();
 }
 
 impl Adapter for PostgresAdapter {
