@@ -1,9 +1,13 @@
-use model::{Attributes, Model};
+use attribute::{Attribute, Attributes};
+use model::Model;
 
-pub trait Adapter<T> {
-    fn find<M>(&self, id: &T) -> Option<Attributes<T>> where M: Model<T>;
+pub trait Adapter {
+    fn find(&self, model: &Model, id: &Attribute) -> Option<Attributes>;
+    fn find_all(&self, model: &Model) -> Vec<Attributes>;
+    fn find_many(&self, model: &Model, ids: &[&Attribute]) -> Vec<Attributes>;
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -11,7 +15,7 @@ mod tests {
     use std::collections::HashMap;
 
     use model::{Model, Attributes};
-    use serializer::Serializer;
+    use serializer::{Serializer, SimpleSerializer};
 
     pub struct User {
         attributes: Attributes<i32>,
@@ -61,8 +65,7 @@ mod tests {
 
     impl Adapter<i32> for MemoryAdapter {
         fn find<M>(&self, id: &i32) -> Option<Attributes<i32>> where M: Model<i32> {
-            let ty = M::ty();
-            if ty != "user" {
+            if M::ty() != "user" {
                 return None;
             }
 
@@ -72,21 +75,36 @@ mod tests {
             };
 
             let mut attributes = Attributes::new();
-
             attributes.insert("name".to_string(), username.clone());
             Some(attributes)
         }
-    }
 
-    pub struct SimpleSerializer;
-
-    impl Serializer<i32> for SimpleSerializer {
-        fn extract<M>(&self, attributes: Attributes<i32>) -> M where M: Model<i32> {
-            let mut model = M::new();
-            for (ref name, attribute) in attributes {
-                model.set_attribute(name, attribute);
+        fn find_all<M>(&self) -> Vec<Attributes<i32>> where M: Model<i32> {
+            let many_attributes = vec![];
+            if M::ty() != "user" {
+                return many_attributes;
             }
-            model
+
+            self.usernames.iter().map(|(_, username)| {
+                let mut attributes = Attributes::new();
+                attributes.insert("name".to_string(), username.clone());
+                attributes
+            }).collect()
+        }
+
+        fn find_many<M>(&self, ids: &[&i32]) -> Vec<Attributes<i32>> where M: Model<i32> {
+            let many_attributes = vec![];
+            if M::ty() != "user" {
+                return many_attributes;
+            }
+
+            self.usernames.iter().filter(|&(&id, _)| {
+                ids.iter().find(|id_to_find| (***id_to_find) == id).is_some()
+            }).map(|(_, username)| {
+                let mut attributes = Attributes::new();
+                attributes.insert("name".to_string(), username.clone());
+                attributes
+            }).collect()
         }
     }
 
@@ -102,5 +120,12 @@ mod tests {
 
         let attributes = adapter.find::<User>(&10);
         assert!(attributes.is_none());
+
+        assert_eq!(adapter.find_all::<User>().len(), 3);
+        assert_eq!(adapter.find_many::<User>(&[&1, &2]).len(), 2);
+        assert_eq!(adapter.find_many::<User>(&[&1, &5]).len(), 1);
+        assert_eq!(adapter.find_many::<User>(&[&5]).len(), 0);
     }
 }
+
+*/

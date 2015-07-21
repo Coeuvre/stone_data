@@ -1,5 +1,18 @@
-use model::{Attributes, Model};
+use attribute::Attributes;
+use model::{Model, Record};
 
-pub trait Serializer<T> {
-    fn extract<M>(&self, attributes: Attributes<T>) -> M where M: Model<T>;
+pub trait Serializer {
+    fn extract(&self, model: &Model, attributes: Attributes) -> Record;
+}
+
+pub struct SimpleSerializer;
+
+impl Serializer for SimpleSerializer {
+    fn extract(&self, model: &Model, attributes: Attributes) -> Record {
+        let mut record = model.create();
+        for (name, attribute) in attributes {
+            record.set(name, attribute);
+        }
+        record
+    }
 }

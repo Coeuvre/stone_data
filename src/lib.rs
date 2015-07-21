@@ -1,13 +1,15 @@
-#![feature(optin_builtin_traits)]
+#![feature(concat_idents)]
 
-extern crate anymap;
+#[macro_use]
+pub mod macros;
 
 pub mod adapter;
-pub mod attr;
+pub mod attribute;
 pub mod model;
+pub mod relationship;
 pub mod store;
 pub mod serializer;
-pub mod transform;
+// pub mod transform;
 
 // Error
 //     RecordNotFound
