@@ -1,19 +1,19 @@
 macro_rules! model {
     (
         $($T:ident {
-            type: $ty:ident,
+            type: $ty:tt,
             attributes: {
-                $($attribute_name:ident : $attribute_type:ident,)*
+                $($attribute_name:tt : $attribute_type:ident,)*
             },
             relationships: {
-                $($relationship_name:ident : $relationship_type:ident<$relationship:ident>,)*
+                $($relationship_name:tt : $relationship_type:ident<$relationship:ident>,)*
             },
         }),*
     ) => {
         model! {
             $($T {
                 type: $ty,
-                primary_key: id,
+                primary_key: "id",
                 attributes: {
                     $($attribute_name: $attribute_type,)*
                 },
@@ -26,27 +26,25 @@ macro_rules! model {
 
     (
         $($T:ident {
-            type: $ty:ident,
-            primary_key: $primary_key:ident,
+            type: $ty:tt,
+            primary_key: $primary_key:tt,
             attributes: {
-                $($attribute_name:ident : $attribute_type:ident,)*
+                $($attribute_name:tt : $attribute_type:ident,)*
             },
             relationships: {
-                $($relationship_name:ident : $relationship_type:ident<$relationship:ident>,)*
+                $($relationship_name:tt : $relationship_type:ident<$relationship:ident>,)*
             },
         }),*
     ) => {
         lazy_static! {
             $(
-                pub static ref $T: ::model::Model = ::model::model(stringify!($ty), stringify!($primary_key)), |m| {
+                pub static ref $T: ::model::Model = ::model::model($ty, $primary_key), |m| {
                     $(
-                        m.attributes.insert(stringify!($attribute_name),
-                            ::attribute::AttributeType::$attribute_type);
+                        m.attributes.insert($attribute_name, $crate::attribute::AttributeType::$attribute_type);
                     )*
 
                     $(
-                        m.relationships.insert(stringify!($relationship_name),
-                            ::relationship::RelationshipType::$relationship_type($relationship.get_ref()));
+                        m.relationships.insert($relationship_name, $crate::relationship::RelationshipType::$relationship_type($relationship.get_ref()));
                     )*
                 };
             )+

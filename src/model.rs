@@ -77,27 +77,27 @@ impl<'a> Record<'a> {
 mod tests {
     model! {
         User {
-            type: user,
+            type: "user",
 
             attributes: {
-                first_name: String,
-                last_name: String,
+                "first_name": String,
+                "last_name": String,
             },
 
             relationships: {
-                orders: HasMany<Order>,
+                "orders": HasMany<Order>,
             },
         },
 
         Order {
-            type: order,
+            type: "order",
 
             attributes: {
-                price: Float,
+                "price": F32,
             },
 
             relationships: {
-                customer: BelongsTo<User>,
+                "customer": BelongsTo<User>,
             },
         }
     }

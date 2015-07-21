@@ -61,6 +61,14 @@ pub struct PostgresAdapter {
     conn: Connection,
 }
 
+impl PostgresAdapter {
+    pub fn new(conn: Connection) -> PostgresAdapter {
+        PostgresAdapter {
+            conn: conn,
+        }
+    }
+}
+
 impl ToSql for Attribute {
     to_sql_checked!();
 
@@ -101,7 +109,7 @@ impl FromSql for Attribute {
 
 impl Adapter for PostgresAdapter {
     fn find(&self, model: &Model, id: &Attribute) -> Option<Attributes> {
-        let sql = format!("SELECT * FROM {} WHERE {} = $1 ORDER BY {} LIMIT 1", model.ty, model.primary_key, model.primary_key);
+        let sql = format!("SELECT * FROM {} WHERE {1} = $1 ORDER BY {1} LIMIT 1", model.ty, model.primary_key);
         let stmt = self.conn.prepare(&sql).unwrap();
         let rows = stmt.query(&[id]).unwrap();
         let row = try_opt!(rows.iter().next());
