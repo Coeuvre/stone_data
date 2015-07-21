@@ -10,9 +10,35 @@ macro_rules! model {
             },
         }),*
     ) => {
+        model! {
+            $($T {
+                type: $ty,
+                primary_key: id,
+                attributes: {
+                    $($attribute_name: $attribute_type,)*
+                },
+                relationships: {
+                    $($relationship_name: $relationship_type<$relationship>,)*
+                },
+            }),*
+        }
+    };
+
+    (
+        $($T:ident {
+            type: $ty:ident,
+            primary_key: $primary_key:ident,
+            attributes: {
+                $($attribute_name:ident : $attribute_type:ident,)*
+            },
+            relationships: {
+                $($relationship_name:ident : $relationship_type:ident<$relationship:ident>,)*
+            },
+        }),*
+    ) => {
         lazy_static! {
             $(
-                pub static ref $T: ::model::Model = ::model::model(stringify!($ty)), |m| {
+                pub static ref $T: ::model::Model = ::model::model(stringify!($ty), stringify!($primary_key)), |m| {
                     $(
                         m.attributes.insert(stringify!($attribute_name),
                             ::attribute::AttributeType::$attribute_type);
@@ -111,7 +137,6 @@ macro_rules! lazy_static {
         #[allow(dead_code)]
         pub struct $N {__private_field: ()}
         #[allow(non_upper_case_globals)]
-        #[allow(dead_code)]
         pub static $N: $N = $N {__private_field: ()};
     };
     (MAKE TY PRIV $N:ident) => {
@@ -120,8 +145,14 @@ macro_rules! lazy_static {
         #[allow(dead_code)]
         struct $N {__private_field: ()}
         #[allow(non_upper_case_globals)]
-        #[allow(dead_code)]
         static $N: $N = $N {__private_field: ()};
     };
     () => ()
+}
+
+macro_rules! try_opt {
+    ($expr:expr) => (match $expr {
+        Some(val) => val,
+        None => return None,
+    })
 }

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use model::{Model, Record};
 
 pub type RelationshipTypes = HashMap<&'static str, RelationshipType>;
-pub type Relationships<'a> = HashMap<&'static str, Relationship<'a>>;
+pub type Relationships<'a> = HashMap<String, Relationship<'a>>;
 
 #[derive(Debug)]
 pub enum RelationshipType {

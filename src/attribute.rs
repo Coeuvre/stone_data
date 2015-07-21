@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 pub type AttributeTypes = HashMap<&'static str, AttributeType>;
-pub type Attributes = HashMap<&'static str, Attribute>;
+pub type Attributes = HashMap<String, Attribute>;
 
 macro_rules! attribute {
     (
@@ -22,7 +22,7 @@ macro_rules! attribute {
             }
         }
 
-        #[derive(Debug, PartialEq)]
+        #[derive(Clone, Debug, PartialEq)]
         pub enum Attribute {
             $($attribute_type(Option<$attribute>),)*
         }
@@ -30,8 +30,12 @@ macro_rules! attribute {
 }
 
 attribute! {
-    Integer<i32>,
     Bool<bool>,
-    Float<f32>,
+    I8<i8>,
+    I16<i16>,
+    I32<i32>,
+    I64<i64>,
+    F32<f32>,
+    F64<f64>,
     String<String>,
 }

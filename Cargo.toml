@@ -3,4 +3,10 @@ name = "stone_data"
 version = "0.0.0"
 authors = ["Coeuvre Wong <coeuvre@gmail.com>"]
 
-[dependencies]
+[features]
+postgres-adapter = ["postgres"]
+
+[dependencies.postgres]
+features = ["chrono"]
+git = "https://github.com/Coeuvre/rust-postgres"
+optional = true

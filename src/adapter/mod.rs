@@ -1,6 +1,9 @@
 use attribute::{Attribute, Attributes};
 use model::Model;
 
+#[cfg(feature="postgres-adapter")]
+pub mod postgres_adapter;
+
 pub trait Adapter {
     fn find(&self, model: &Model, id: &Attribute) -> Option<Attributes>;
     fn find_all(&self, model: &Model) -> Vec<Attributes>;

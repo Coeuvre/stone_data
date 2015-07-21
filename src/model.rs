@@ -6,13 +6,15 @@ use relationship::{Relationship, RelationshipType, Relationships, RelationshipTy
 #[derive(Debug)]
 pub struct Model {
     pub ty: &'static str,
+    pub primary_key: &'static str,
     pub attributes: HashMap<&'static str, AttributeType>,
     pub relationships: HashMap<&'static str, RelationshipType>,
 }
 
-pub fn model(ty: &'static str) -> Model {
+pub fn model(ty: &'static str, primary_key: &'static str) -> Model {
     Model {
         ty: ty,
+        primary_key: primary_key,
         attributes: AttributeTypes::new(),
         relationships: RelationshipTypes::new(),
     }
@@ -23,8 +25,8 @@ impl Model {
         Record {
             id: Attribute::String(None),
             ty: self.ty,
-            attributes: self.attributes.iter().map(|(name, ty)| (*name, ty.to_attribute())).collect(),
-            relationships: self.relationships.iter().map(|(name, ty)| (*name, ty.to_relationship())).collect(),
+            attributes: self.attributes.iter().map(|(name, ty)| (name.to_string(), ty.to_attribute())).collect(),
+            relationships: self.relationships.iter().map(|(name, ty)| (name.to_string(), ty.to_relationship())).collect(),
         }
     }
 }
@@ -102,7 +104,7 @@ mod tests {
 
     #[test]
     fn test() {
-        let user = User.new();
+        let user = User.create();
         assert!(user.get("first_name").is_some());
         assert!(user.get("other").is_none());
     }

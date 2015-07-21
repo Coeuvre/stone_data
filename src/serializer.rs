@@ -11,7 +11,7 @@ impl Serializer for SimpleSerializer {
     fn extract(&self, model: &Model, attributes: Attributes) -> Record {
         let mut record = model.create();
         for (name, attribute) in attributes {
-            record.set(name, attribute);
+            record.set(&name, attribute);
         }
         record
     }
