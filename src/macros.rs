@@ -38,7 +38,7 @@ macro_rules! model {
     ) => {
         lazy_static! {
             $(
-                pub static ref $T: ::model::Model = ::model::model($ty, $primary_key), |m| {
+                pub static ref $T: $crate::model::Model = $crate::model::model($ty, $primary_key), |m| {
                     $(
                         m.attributes.insert($attribute_name, $crate::attribute::AttributeType::$attribute_type);
                     )*
@@ -47,8 +47,16 @@ macro_rules! model {
                         m.relationships.insert($relationship_name, $crate::relationship::RelationshipType::$relationship_type($relationship.get_ref()));
                     )*
                 };
-            )+
+            )*
         }
+
+        $(
+            impl AsRef<$crate::model::Model> for $T {
+                fn as_ref(&self) -> &$crate::model::Model {
+                    &*self
+                }
+            }
+        )*
     };
 }
 

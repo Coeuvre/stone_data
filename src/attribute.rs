@@ -26,6 +26,14 @@ macro_rules! attribute {
         pub enum Attribute {
             $($attribute_type(Option<$attribute>),)*
         }
+
+        $(
+            impl Into<Attribute> for $attribute {
+                fn into(self) -> Attribute {
+                    Attribute::$attribute_type(Some(self))
+                }
+            }
+        )*
     }
 }
 

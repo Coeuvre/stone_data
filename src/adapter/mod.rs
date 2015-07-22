@@ -1,13 +1,11 @@
-use attribute::{Attribute, Attributes};
-use model::Model;
+use attribute::Attributes;
+use query::Query;
 
 #[cfg(feature="postgres-adapter")]
 pub mod postgres_adapter;
 
 pub trait Adapter {
-    fn find(&self, model: &Model, id: &Attribute) -> Option<Attributes>;
-    fn find_all(&self, model: &Model) -> Vec<Attributes>;
-    fn find_many(&self, model: &Model, ids: &[&Attribute]) -> Vec<Attributes>;
+    fn query(&self, query: &Query) -> Option<Vec<Attributes>>;
 }
 
 /*
@@ -130,5 +128,4 @@ mod tests {
         assert_eq!(adapter.find_many::<User>(&[&5]).len(), 0);
     }
 }
-
 */

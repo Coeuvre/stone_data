@@ -1,4 +1,4 @@
-#![feature(concat_idents)]
+#![feature(convert)]
 
 #[macro_use]
 pub mod macros;
@@ -6,8 +6,9 @@ pub mod macros;
 pub mod adapter;
 pub mod attribute;
 pub mod model;
+pub mod query;
 pub mod relationship;
-pub mod store;
+// pub mod store;
 pub mod serializer;
 // pub mod transform;
 

@@ -4,9 +4,13 @@ version = "0.0.0"
 authors = ["Coeuvre Wong <coeuvre@gmail.com>"]
 
 [features]
+default = ["postgres-adapter"]
 postgres-adapter = ["postgres"]
 
 [dependencies.postgres]
 features = ["chrono"]
 git = "https://github.com/Coeuvre/rust-postgres"
 optional = true
+
+[dev-dependencies]
+env_logger = "*"
