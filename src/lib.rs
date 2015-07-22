@@ -8,7 +8,7 @@ pub mod attribute;
 pub mod model;
 pub mod query;
 pub mod relationship;
-// pub mod store;
+pub mod store;
 pub mod serializer;
 // pub mod transform;
 

@@ -1,4 +1,4 @@
-use attribute::{Attribute, Attributes};
+use attribute::Attribute;
 
 pub enum SortOrder {
     ASC,
@@ -154,12 +154,6 @@ impl<'a> OrFilterBuilder<'a> {
                                             Box::new(Filter::In(self.name, attributes))));
         self.query
     }
-}
-
-pub struct QueryResult {
-    pub attributes: Option<Vec<Attributes>>,
-    pub page: i32,
-    pub count: i32,
 }
 
 #[test]
