@@ -1,11 +1,11 @@
-use attribute::Attributes;
+use model::RecordSet;
 use query::Query;
 
 #[cfg(feature="postgres-adapter")]
 pub mod postgres_adapter;
 
 pub trait Adapter {
-    fn query(&self, query: &Query) -> Option<Vec<Attributes>>;
+    fn query(&self, query: &Query) -> Option<RecordSet>;
 }
 
 /*

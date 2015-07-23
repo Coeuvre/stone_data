@@ -7,14 +7,16 @@ pub type Relationships<'a> = HashMap<String, Relationship<'a>>;
 
 #[derive(Debug)]
 pub enum RelationshipType {
-    BelongsTo(&'static Model),
-    HasMany(&'static Model),
+    BelongsTo(Model),
+    HasOne(Model),
+    HasMany(Model),
 }
 
 impl RelationshipType {
     pub fn to_relationship<'a, 'b>(&'a self) -> Relationship<'b> {
         match *self {
             RelationshipType::BelongsTo(_) => Relationship::BelongsTo(None),
+            RelationshipType::HasOne(_) => Relationship::HasOne(None),
             RelationshipType::HasMany(_) => Relationship::HasMany(vec![]),
         }
     }
@@ -23,5 +25,6 @@ impl RelationshipType {
 #[derive(Debug)]
 pub enum Relationship<'a> {
     BelongsTo(Option<&'a Record<'a>>),
-    HasMany(Vec<&'a Record<'a>>),
+    HasOne(Option<Record<'a>>),
+    HasMany(Vec<Record<'a>>),
 }

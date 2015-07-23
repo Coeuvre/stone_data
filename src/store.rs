@@ -33,4 +33,15 @@ impl Store {
         let attributes = attributes.into_iter().next().unwrap();
         Some(serializer.extract(model, attributes))
     }
+
+    pub fn find_by<'a, A, S>(&'a mut self, model: &Model, adapter: &A, serializer: &'a S, name: &str, filter: &Attribute) -> Option<Vec<Record<'a>>>
+        where A: Adapter, S: Serializer
+    {
+        let query = Query::table(model.ty).filter(name).eq(filter);
+        let attributes = match adapter.query(&query) {
+            Some(a) => a,
+            None => return None,
+        };
+        Some(attributes.into_iter().map(|attributes| serializer.extract(model, attributes)).collect())
+    }
 }

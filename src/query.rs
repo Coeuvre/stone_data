@@ -1,4 +1,6 @@
+use adapter::Adapter;
 use attribute::Attribute;
+use model::{Model, RecordSet};
 
 pub enum SortOrder {
     ASC,
@@ -7,6 +9,7 @@ pub enum SortOrder {
 
 pub enum Filter<'a> {
     IsNull(&'a str),
+    IsNotNull(&'a str),
 
     Equal(&'a str, &'a Attribute),
     In(&'a str, Vec<&'a Attribute>),
@@ -16,7 +19,8 @@ pub enum Filter<'a> {
 }
 
 pub struct Query<'a> {
-    pub table: Option<&'a str>,
+    pub model: Model,
+    pub include: Option<Vec<Model>>,
     pub fields: Option<Vec<&'a str>>,
     pub sort: Option<Vec<(&'a str, SortOrder)>>,
     pub filter: Option<Filter<'a>>,
@@ -25,15 +29,25 @@ pub struct Query<'a> {
 }
 
 impl<'a> Query<'a> {
-    pub fn table(table: &'a str) -> Query<'a> {
+    pub fn new(model: Model) -> Query<'a> {
         Query {
-            table: Some(table),
+            model: model,
+            include: None,
             fields: None,
             sort: None,
             filter: None,
             offset: None,
             limit: None,
         }
+    }
+
+    pub fn get<A: Adapter>(self, adapter: &A) -> Option<RecordSet> {
+        adapter.query(&self)
+    }
+
+    pub fn include(mut self, models: Vec<Model>) -> Query<'a> {
+        self.include = Some(models);
+        self
     }
 
     pub fn select(mut self, fileds: Vec<&'a str>) -> Query<'a> {
@@ -62,7 +76,7 @@ impl<'a> Query<'a> {
         self
     }
 
-    pub fn filter(self, name: &'a str) -> WhereFilterBuilder<'a> {
+    pub fn where_(self, name: &'a str) -> WhereFilterBuilder<'a> {
         WhereFilterBuilder {
             query: self,
             name: name,
@@ -95,12 +109,17 @@ impl<'a> WhereFilterBuilder<'a> {
         self.query
     }
 
+    pub fn is_not_null(mut self) -> Query<'a> {
+        self.query.filter = Some(Filter::IsNotNull(self.name));
+        self.query
+    }
+
     pub fn eq(mut self, attribute: &'a Attribute) -> Query<'a> {
         self.query.filter = Some(Filter::Equal(self.name, attribute));
         self.query
     }
 
-    pub fn en(mut self, attributes: Vec<&'a Attribute>) -> Query<'a> {
+    pub fn in_(mut self, attributes: Vec<&'a Attribute>) -> Query<'a> {
         self.query.filter = Some(Filter::In(self.name, attributes));
         self.query
     }
@@ -118,13 +137,19 @@ impl<'a> AndFilterBuilder<'a> {
         self.query
     }
 
+    pub fn is_not_null(mut self) -> Query<'a> {
+        self.query.filter = Some(Filter::And(Box::new(self.query.filter.unwrap()),
+                                             Box::new(Filter::IsNotNull(self.name))));
+        self.query
+    }
+
     pub fn eq(mut self, attribute: &'a Attribute) -> Query<'a> {
         self.query.filter = Some(Filter::And(Box::new(self.query.filter.unwrap()),
                                              Box::new(Filter::Equal(self.name, attribute))));
         self.query
     }
 
-    pub fn en(mut self, attributes: Vec<&'a Attribute>) -> Query<'a> {
+    pub fn in_(mut self, attributes: Vec<&'a Attribute>) -> Query<'a> {
         self.query.filter = Some(Filter::And(Box::new(self.query.filter.unwrap()),
                                              Box::new(Filter::In(self.name, attributes))));
         self.query
@@ -143,22 +168,21 @@ impl<'a> OrFilterBuilder<'a> {
         self.query
     }
 
+    pub fn is_not_null(mut self) -> Query<'a> {
+        self.query.filter = Some(Filter::Or(Box::new(self.query.filter.unwrap()),
+                                            Box::new(Filter::IsNotNull(self.name))));
+        self.query
+    }
+
     pub fn eq(mut self, attribute: &'a Attribute) -> Query<'a> {
         self.query.filter = Some(Filter::Or(Box::new(self.query.filter.unwrap()),
                                             Box::new(Filter::Equal(self.name, attribute))));
         self.query
     }
 
-    pub fn en(mut self, attributes: Vec<&'a Attribute>) -> Query<'a> {
+    pub fn in_(mut self, attributes: Vec<&'a Attribute>) -> Query<'a> {
         self.query.filter = Some(Filter::Or(Box::new(self.query.filter.unwrap()),
                                             Box::new(Filter::In(self.name, attributes))));
         self.query
     }
-}
-
-#[test]
-fn test() {
-    let id = 1.into();
-    let name = "coeuvre".to_string().into();
-    Query::table("user").select(vec!["id", "name"]).filter("id").eq(&id).and("name").eq(&name).order_by("id", SortOrder::ASC).limit(1);
 }

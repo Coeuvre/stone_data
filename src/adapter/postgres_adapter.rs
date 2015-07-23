@@ -8,6 +8,7 @@ use self::postgres::error::Error as PostgresError;
 
 use super::Adapter;
 use attribute::{Attribute, Attributes};
+use model::{Record, RecordSet};
 use query::{Query, Filter, SortOrder};
 
 macro_rules! accepts {
@@ -138,7 +139,7 @@ fn build_sql<'a>(query: &'a Query) -> (String, Vec<&'a Attribute>) {
             fields.push_str(field);
             fields
         })
-    }, query.table.unwrap());
+    }, query.model.ty);
 
     if let Some(ref filter) = query.filter {
         sql.push_str(" WHERE ");
@@ -174,6 +175,7 @@ fn build_sql<'a>(query: &'a Query) -> (String, Vec<&'a Attribute>) {
 fn build_filter<'a>(sql: &mut String, params: &mut Vec<&'a Attribute>, filter: &Filter<'a>) {
     match filter {
         &Filter::IsNull(name) => sql.push_str(format!("{} IS NULL", name).as_str()),
+        &Filter::IsNotNull(name) => sql.push_str(format!("{} IS NOT NULL", name).as_str()),
         &Filter::Equal(name, attribute) => {
             params.push(attribute);
             sql.push_str(format!("{}=${}", name, params.len()).as_str());
@@ -207,9 +209,18 @@ fn build_filter<'a>(sql: &mut String, params: &mut Vec<&'a Attribute>, filter: &
 }
 
 impl Adapter for PostgresAdapter {
-    fn query(&self, query: &Query) -> Option<Vec<Attributes>> {
+    fn query(&self, query: &Query) -> Option<RecordSet> {
         let (sql, params) = build_sql(query);
-        self.query_raw(sql.as_str(), &params)
+        let many_attributes = try_opt!(self.query_raw(sql.as_str(), &params));
+        let records: Vec<Record> = many_attributes.into_iter().map(|attributes| {
+            let mut record = query.model.create();
+            for (name, attribute) in attributes {
+                record.set(&name, attribute);
+            }
+            record
+        }).collect();
+
+        Some(RecordSet::new(records))
     }
 }
 
@@ -220,7 +231,6 @@ mod tests {
     use super::*;
     use super::postgres::{Connection, SslMode};
 
-    use adapter::Adapter;
     use query::{Query, SortOrder};
 
     model! {
@@ -246,10 +256,12 @@ mod tests {
         let conn = Connection::connect(DB_CONNECTION_URL, &SslMode::None).unwrap();
         let adapter = PostgresAdapter::new(conn);
         let user_id = 10001.into();
-        let name = "admin".to_string().into();
-        let query = Query::table(User.ty).select(vec!["user_id", "name"])
-                        .filter("user_id").eq(&user_id).and("name").eq(&name).and("telephone").is_null()
-                        .order_by("user_id", SortOrder::ASC).limit(1);
-        adapter.query(&query);
+        let model = Query::new(&User).select(vec!["user_id", "name"])
+                                     .where_("user_id").eq(&user_id)
+                                     .and("telephone").is_not_null()
+                                     .order_by("user_id", SortOrder::ASC)
+                                     .limit(1)
+                                     .get(&adapter);
+        assert!(model.is_some());
     }
 }
